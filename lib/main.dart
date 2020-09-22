@@ -35,13 +35,12 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  List<double> traceSine = List();
-  List<double> traceCosine = List();
+  List<double> volumeData = List();
+  List<double> flowData = List();
+  List<double> pawData = List();
   double radians = 0.0;
   Timer _timer;
-  int _counter = 5;
   int _ppeak = 18;
-  int _pplat = 16;
   int _peep = 10;
   int _bpm = 10;
   int _ratio = 2;
@@ -50,7 +49,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   initState() {
     super.initState();
-    _timer = Timer.periodic(Duration(milliseconds: 60), _generateTrace);
+    _timer = Timer.periodic(Duration(milliseconds: 200), _generateTrace);
   }
 
   @override
@@ -59,22 +58,38 @@ class _MyHomePageState extends State<MyHomePage> {
     super.dispose();
   }
 
+  int _generateData(int min, int max) {
+    Random rnd = new Random();
+    return min + rnd.nextInt(max - min);
+  }
+
   _generateTrace(Timer t) {
+    //final _random = new Random();
+    //int next(int min, int max) => min + _random.nextInt(max - min);
     // generate our  values
-    var sv = sin((radians * pi));
-    var cv = cos((radians * pi));
+    //var sv = sin((radians * pi));
+    //var cv = cos((radians * pi));
 
     // Add to the growing dataset
     setState(() {
-      traceSine.add(sv);
-      traceCosine.add(cv);
+      /*if (traceSine.length > 300) {
+        traceSine.removeAt(0);
+      }*/
+      double dataVolume = _generateData(0, 1000).toDouble();
+      volumeData.add(dataVolume);
+
+      double dataPaw = _generateData(-20, 60).toDouble();
+      pawData.add(dataPaw);
+
+      double dataFlow = _generateData(-100, 100).toDouble();
+      flowData.add(dataFlow);
     });
 
     // adjust to recyle the radian value ( as 0 = 2Pi RADS)
-    radians += 0.05;
-    if (radians >= 2.0) {
-      radians = 0.0;
-    }
+    //radians += 0.05;
+    //if (radians >= 2.0) {
+    //radians = 0.0;
+    //}
   }
 
   Widget _space() {
@@ -85,38 +100,37 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    Oscilloscope scopeOne = Oscilloscope(
+    Oscilloscope flow = Oscilloscope(
       padding: 20.0,
       backgroundColor: Colors.black,
       traceColor: Colors.green,
-      yAxisMax: 1.0,
-      yAxisMin: -1.0,
-      dataSet: traceSine,
+      yAxisMax: 100.0,
+      yAxisMin: -100.0,
+      dataSet: flowData,
+      showYAxis: true,
+    );
+
+    Oscilloscope paw = Oscilloscope(
+      padding: 20.0,
+      backgroundColor: Colors.black,
+      traceColor: Colors.redAccent,
+      yAxisMax: 60.0,
+      yAxisMin: -20.0,
+      dataSet: pawData,
       showYAxis: true,
     );
 
     // Create A Scope Display for Cosine
-    Oscilloscope scopeTwo = Oscilloscope(
+    Oscilloscope volume = Oscilloscope(
       showYAxis: true,
       padding: 20.0,
       backgroundColor: Colors.black,
       traceColor: Colors.yellow,
-      yAxisMax: 1.0,
-      yAxisMin: -1.0,
-      dataSet: traceCosine,
+      yAxisMax: 1000.0,
+      yAxisMin: 0.0,
+      dataSet: volumeData,
     );
 
-    Oscilloscope scopeThree = Oscilloscope(
-      showYAxis: true,
-      padding: 20.0,
-      backgroundColor: Colors.black,
-      traceColor: Colors.blue,
-      yAxisMax: 1.0,
-      yAxisMin: -1.0,
-      dataSet: traceCosine,
-    );
-
-    // Generate the Scaffold
     return Scaffold(
       appBar: AppBar(
         title: Text("Ventilator"),
@@ -124,29 +138,76 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Row(
         children: [
           Expanded(
-            flex: 2,
+            flex: 3,
             child: Column(
               children: <Widget>[
-                Container(
-                  height: 20,
-                  child: Text("PAW"),
-                ),
-                Expanded(flex: 1, child: scopeOne),
-                Container(
-                  height: 20,
-                  child: Text("Flow"),
+                Expanded(
+                    flex: 1,
+                    child: Stack(children: [
+                      paw,
+                      Container(
+                        padding: EdgeInsets.only(top: 5.0),
+                        alignment: Alignment.topCenter,
+                        child: Text(
+                          "PAW",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                      Container(
+                        padding: EdgeInsets.all(10),
+                        alignment: Alignment.topRight,
+                        child: CircleAvatar(
+                          radius: 25.0,
+                          child: Text(
+                            "40",
+                            style: TextStyle(fontSize: 20),
+                          ),
+                        ),
+                      )
+                    ])),
+                Expanded(
+                  flex: 1,
+                  child: Stack(children: [
+                    flow,
+                    Container(
+                        padding: EdgeInsets.only(top: 5.0),
+                        alignment: Alignment.topCenter,
+                        child: Text("Flow",
+                            style: TextStyle(color: Colors.white))),
+                    Container(
+                      padding: EdgeInsets.all(10),
+                      alignment: Alignment.topRight,
+                      child: CircleAvatar(
+                        radius: 25.0,
+                        child: Text(
+                          "50",
+                          style: TextStyle(fontSize: 20),
+                        ),
+                      ),
+                    )
+                  ]),
                 ),
                 Expanded(
                   flex: 1,
-                  child: scopeTwo,
-                ),
-                Container(
-                  height: 20,
-                  child: Text("Volume"),
-                ),
-                Expanded(
-                  flex: 1,
-                  child: scopeThree,
+                  child: Stack(children: [
+                    volume,
+                    Container(
+                        padding: EdgeInsets.only(top: 5.0),
+                        alignment: Alignment.topCenter,
+                        child: Text("Volume",
+                            style: TextStyle(color: Colors.white))),
+                    Container(
+                      padding: EdgeInsets.all(10),
+                      alignment: Alignment.topRight,
+                      child: CircleAvatar(
+                        radius: 25.0,
+                        child: Text(
+                          "500",
+                          style: TextStyle(fontSize: 20),
+                        ),
+                      ),
+                    )
+                  ]),
                 ),
               ],
             ),
