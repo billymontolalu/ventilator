@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:oscilloscope/oscilloscope.dart';
 import 'package:number_stepper/number_stepper.dart';
+import 'package:http/http.dart' as http;
 
 void main() {
   runApp(MyApp());
@@ -63,7 +64,11 @@ class _MyHomePageState extends State<MyHomePage> {
     return min + rnd.nextInt(max - min);
   }
 
-  _generateTrace(Timer t) {
+  _generateTrace(Timer t) async {
+    //load data from internet
+    final response = await http.get('http://localhost:3000/');
+    print(response);
+
     //final _random = new Random();
     //int next(int min, int max) => min + _random.nextInt(max - min);
     // generate our  values
