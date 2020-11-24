@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:number_stepper/number_stepper.dart';
 import 'package:oscilloscope/oscilloscope.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'constanta.dart';
 
@@ -29,15 +30,23 @@ class _StatsState extends State<Stats> {
   double dataVolume = 0;
   String start = "Start";
   String fio = "0", cp = "0";
+  String ip = "";
 
   @override
   initState() {
     super.initState();
+    getIp();
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.landscapeRight,
       DeviceOrientation.landscapeLeft,
     ]);
     _timer = Timer.periodic(Duration(milliseconds: 200), _generateTrace);
+  }
+
+  void getIp() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    ip = prefs.getString("ip");
+    ip = "http://" + ip + ":8000";
   }
 
   @override
@@ -55,7 +64,7 @@ class _StatsState extends State<Stats> {
 
   _generateTrace(Timer t) async {
     //load data from internet
-    final response = await http.get(BASE_URL);
+    final response = await http.get(ip);
     var data = response.body;
     var split = data.split("#");
     var paw = split[0];
